@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<head>
+  <meta name="viewport" content="width=device-width,
+    initial-scale=1, maximum-scale=1, user-scalable=0"/>
+  <style> body { margin: 0; } </style>
+
+  <script src="https://unpkg.com/force-graph"></script>
+  <!--<script src="../../dist/force-graph.js"></script>-->
+
+  <script src="https://unpkg.com/@tarekraafat/autocomplete.js@10.2.7/dist/autoComplete.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/@tarekraafat/autocomplete.js@10.2.7/dist/css/autoComplete.css">
+</head>
+
+<body>
+  <div style="position: absolute; width:370px;top: 0; left: 0; z-index: 999; padding: 10px; background-color: rgba(255,255,255,0.8); font-family: sans-serif;">
+   
+  <input id="autoComplete" type="search" dir="ltr" spellcheck=false autocorrect="off" autocomplete="off" autocapitalize="off" maxlength="2048" tabindex="1">
+  <div id="onclickhide" style="position:relative;width: 100%;top: 0; left: 0; z-index: 0; padding: 10px; background-color: rgba(255,255,255,0.1); font-family: sans-serif; font-size: small;">
+      <h2>Hack Map - 5 Million Hacker News stories, users and comments in one plot</h2>
+  <p id="eplain1">
+    This plot shows a few millions of the around 40 million stories, comments and authors from <a href="https://news.ycombinator.com/">Hacker News</a>.
+    Similar stories and comments are placed close to each other, based on the content of the comments.
+    
+  </p>
+  <p>
+    <b>How to use:</b> 
+    <ul>
+      <!-- <li>Click on a node to see the author's name and the number of works and citations</li> -->
+      <!-- <li>Click on the author's name to open the author's page on <a href="https://www.demographic-research.org/">Demographic Research</a></li> -->
+      <li>Use the search box to find a story, a user, a comment or a topic</li>
+      <li>Use the mouse wheel or two fingers to zoom in and out</li>
+    </ul>
+    
+  </p>
+  <details>
+    <summary>Details</summary>
+    <p>
+      The data was downloaded from the HN-API
+      But since ~40 Million items are too much for a browser, 
+      I kept only those 2.6 Million with at least some replies.
+      I fed the comments to a <a href="https://www.sbert.net/">SentenceTransformers</a> model (all-MiniLM-L6-v2) 
+      to create text embeddings. Titles of submissions are often ambiguous, so I used the average embeddings of their comments
+      to get a better representation of the content of submissions. The same was done for the users.
+      Then I used <a href="https://umap-learn.readthedocs.io/">UMAP</a> to reduce the dimensionality of the embeddings
+      to 3, 2 and 1 dimensions. 3 for the colors, 2 for the placement of the nodes and 1 for a plot with the time dimension.
+      But the 3D colors didn't add much information, so I removed them. <br/>
+      I also used <a href="https://maartengr.github.io/BERTopic/">Bertopic</a> to get clusters and names for these 
+      clusters... but they also don't add much information upon the titles of the submissions.
+
+      <br/>
+      There are several implementations of maps like this. (todo: add links)
+      Some of them are very sophisticated, but they don't show the actual text on the canvas. 
+      I think showing as much information as possible, while not overwhelming the user (and browser...)
+      is very important for how much the user can get out of such a visualization of big data.
+      Another important aspect is that I wanted to host the whole thing on a static hoster,
+      which makes things much easier in the long term.
+      I used mostly vanilla Javascript (good decision for such a site - no build step 
+      and no fighting against Svelte or React) and the excellent 
+      <a href="https://github.com/vasturiano/force-graph">force-graph</a> library.
+
+      Since there are too many data points to show at once, the page fetches a base map with
+      the 40 000 most important nodes and then fetches additional data tiles when you zoom in.
+      Unfortunately, I couldn't find the time to implement a static search over all the data, 
+      so the search currently only works for the base-tile of 40 000 nodes.
+      <br/>
+      The color of the nodes is based on the publication date. The size is based on the 
+      score of submissions and the number of direct and indirect child comments for comments 
+      and users.
+      <br/>
+
+
+      <br/>
+
+      The biggest challenge in this project was that it worked so well that I got constantly 
+      distracted by the stories and comments that I discovered while testing the plot.
+      This is why I release it now in this work-in-progress state. Firefox doesn't render some nodes 
+      when zoomed in too much, Chrome renders them, but has problems with showing the correct tooltips.
+    </p>
+    <p>
+      Candos and Todos:
+      <ul>
+        <li>better search</li>
+        <li>more levels of tiles</li>
+        <li>tuning of the size and show parameters</li>
+        <li>earlier data from HN</li>
+        <li>Other datasets (MusicBrainz, OpenAlex, Newspapers,...)</li>
+      </p>
+      If you have any questions or suggestions, please get in touch at <a href="mailto:tom@theilemail.de">tom@theilemail.de</a>
+      <p>The code can be found on Github: <a href="https://github.com/tomthe/hackmap">github.com/tomthe/demographymap</a>
+
+      </p>
+  </details>
+  
+</div>
+  <button id="toggleButton" onclick="var x = document.getElementById('onclickhide'); var btn = document.getElementById('toggleButton'); if(x.style.display === 'none') { x.style.display = 'block'; btn.innerHTML = '&#10060;'; } else { x.style.display = 'none'; btn.innerHTML = '&#8505;'; }" style=" padding: 0.5rem; box-sizing: border-box; font-size: .75rem; color: rgba(84, 57, 57, 0.8); outline: none; border-radius: 20%;  background-color: #fff; cursor: pointer;">&#10060; close this info-box</button>
+  
+</div>
+  <div id="graph"></div>
+
+  <script>
+
+console.log(window.location.search);
+const urlParams = new URLSearchParams(window.location.search);
+const urlx = Number(urlParams.get('x'))
+const urly = Number(urlParams.get('y'))
+const urlk = Number(urlParams.get('k'))
+let datasetname = urlParams.get('dataset')
+console.log(" urlx,y,k ",urlx, urly, urlk, datasetname);
+if (datasetname == null) {
+  datasetname = "hn2";
+}
+
+let data1 = {
+  nodes: [],
+  links: []
+};
+
+let Graph;
+let datazoom = {k:1.0, x:0, y:0};
+let ntiles = 16;
+let minmaxxy = [0.90435845, 7.794952,  2.9052534, 7.5529757]//[-9.492, 22.931,  1.708, 16.473]//[-9.936, 22.958, -5.492, 16.929]
+let scalefactor = 80;
+let startx = (minmaxxy[0]+minmaxxy[1])/2;
+let starty = (minmaxxy[2]+minmaxxy[3])/2;
+let startk = 2.3;
+if (datasetname =="hnet") {
+  scalefactor = 80; //increase if too much text is shown
+} else if (datasetname =="hnet3") {
+  scalefactor = 3000; //increase if too much text is shown
+}else if (datasetname =="hnet4") {
+  scalefactor = 900; //increase if too much text is shown
+} else if (datasetname =="hnbig3") {
+  scalefactor = 65; //increase if too much text is shown
+  minmaxxy = [-6.774233, 17.100904, -8.94446,  16.127075]
+  startx = 155.0;
+  starty = 0.0;
+  startk = 2.5;
+} else if (datasetname =="hnbig4") {
+  scalefactor = 65; //increase if too much text is shown
+  minmaxxy = [-6.774233, 17.100904, -8.94446,  16.127075]
+  startx = 155.0;
+  starty = 0.0;
+  startk = 2.5;
+  ntiles=20;
+} else {
+  scalefactor = 50; //increase if too much text is shown
+}
+
+minmaxxy = minmaxxy.map(function(x) { return x * scalefactor; }); //[-10.0,10.0,-10.0,10.0];
+let firstlength = 0;
+let lastlength = 0;
+const tilesizex = (minmaxxy[1]-minmaxxy[0])/ntiles;
+const tilesizey = (minmaxxy[3]-minmaxxy[2])/ntiles;
+let xtile, ytile;
+let explain1 = document.getElementById("eplain1");
+console.log("minmaxxy",minmaxxy, tilesizex, tilesizey)
+
+function fetchAndDisplayNewData(zoom) {
+  // get url
+  console.log("fetchAndDisplayNewData", zoom);
+  xtile = Math.floor((zoom.x-minmaxxy[0])/tilesizex);
+  ytile = Math.floor((zoom.y-minmaxxy[2])/tilesizey);
+  const url = "data/"+datasetname + "/tiles/"+xtile+"_"+ytile+"_dem.tsv";
+
+  // delete "old" data
+  data1.nodes = data1.nodes.slice(0,firstlength);
+
+  // fetch new data and add to graph; then save position and zoom
+  streamingLoaderWorker.postMessage(url);
+  datazoom = zoom  
+}
+
+const streamingLoaderWorker = new Worker("streaming-tsv-parser.js");
+streamingLoaderWorker.onmessage = ({
+  data: { items, totalBytes, finished }
+}) => {
+  const rows = items
+    .map(d => ({
+      ...d,
+      type: d.type,
+      topic: d.topic,
+      fx: Number(d.x)*scalefactor,
+      fy: Number(d.y)*scalefactor,
+      // fx: Number(d.umap1d)*50,
+      // fy: -(Number(d.year)-1550000)/750000.0,
+      // fz: (Number(d.year)-2000)*45,
+      year: Math.round(Number(d.year)),
+      author_name: d.author,
+      text_label: d.label,
+      text_list: d.hovertext,
+      n_works: Number(d.relevance),
+      n_citations: Number(d.size),
+      id: d.id,
+      __bckgDimensions: [-1, -1],
+    }))
+  // console.log("rows", rows.length, rows[0], rows[rows.length-1])
+    // .filter(d => d.year);
+  data1.nodes = data1.nodes.concat(rows);
+  if (finished && datazoom.k != 1.0) {
+    //
+    console.log("done loading after zooming", data1.nodes.length, "rows");
+    Graph.graphData(data1);
+  } else if (finished && datazoom.k == 1.0) {
+    console.log("done loading first time", data1.nodes.length, "rows");
+    firstlength = data1.nodes.length;
+
+    //auto complete:
+    const config = {    
+      placeHolder: "Search...",
+        data: {
+            src: data1.nodes,
+            // async () => {
+            //   try {
+            //     // Loading placeholder text
+            //     console.log("autocomplete is loading...");
+            //     document
+            //       .getElementById("autoComplete")
+            //       .setAttribute("placeholder", "Loading...");
+            //     // Fetch External Data Source
+            //     const source = await fetch(
+            //       "https://tarekraafat.github.io/autoComplete.js/demo/db/generic.json"
+            //     );
+            //     const data = await source.json();
+            //     // Post Loading placeholder text
+            //     document
+            //       .getElementById("autoComplete")
+            //       .setAttribute("placeholder", autoCompleteJS.placeHolder);
+            //     // Returns Fetched data
+            //     return data;
+            //   } catch (error) {
+            //     return error;
+            //   }
+            // },
+            keys: ["label"]
+        },
+        resultItem: {
+            highlight: true,
+        },
+        resultsList: {
+          position: "afterend",
+          maxResults: 15,
+          noResults: true,
+        },
+        submit: true,
+    }
+    const autoCompleteJS = new autoComplete(config);
+    document.querySelector("#autoComplete").addEventListener("navigate", function (event) {
+        // "event.detail" carries the autoComplete.js "feedback" object
+        console.log("navigate: ", event.detail);
+        console.log("navigate detail: ", event.detail.selection.value);
+        Graph.centerAt(event.detail.selection.value.fx,event.detail.selection.value.fy, 1000);
+        // Graph.zoom(4.0, 2000);
+      });
+    document.querySelector("#autoComplete").addEventListener("selection", function (event) {
+    // "event.detail" carries the autoComplete.js "feedback" object
+        console.log("select: ", event.detail);
+        console.log("select detail: ", event.detail.selection.value);
+        Graph.centerAt(event.detail.selection.value.fx,event.detail.selection.value.fy, 1000);
+        Graph.zoom(27.0, 2000);
+      });
+    // do stuff with the data
+    Graph = ForceGraph()
+      (document.getElementById('graph'))
+        .graphData(data1)
+        // add 1000 if type is author
+        .nodeAutoColorBy(d => ({story:Math.round((Number(d.year)/50000000)),author:250+d.score}[d.type]||6))//+Math.round(d.umap1d))
+        .nodeVal('n_works')
+        
+        .onNodeClick((node) => {
+          console.log("node clicked", node);
+          if (node.type=="story") {
+            eplain1.innerHTML = `<a href="https://news.ycombinator.com/item?id=${node.id}" target="_blank">${node.hovertext}</a> <br/>
+            <a href="${node.author}" target="_blank">${node.author_name}</a> <br/>
+            ${new Date(node.year*1000).toDateString()} <br/>
+            score: ${node.size} <br/>
+            direct children: ${node.n_children} <br/>
+            total children: ${node.n_descendants} <br/>`;
+          } else if (node.type == "author") {
+            eplain1.innerHTML = `<a href="https://news.ycombinator.com/user?id=${node.id}" target="_blank">${node.hovertext}</a> <br/>
+            last post: ${new Date(node.year*1000).toDateString()} <br/>
+            number of commented on stories: ${node.size} <br/>
+            umap1d: ${node.umap1d} <br/>
+            direct children: ${node.n_children} <br/>
+            total children: ${node.n_descendants} <br/>`;
+          } else if (node.type == "comment") {
+            eplain1.innerHTML = `<a href="https://news.ycombinator.com/item?id=${node.id}" target="_blank">${node.hovertext}</a> <br/>
+            last post: ${new Date(node.year*1000).toDateString()} <br/>
+            number of commented on stories: ${node.size} <br/>
+            umap1d: ${node.umap1d} <br/>
+            direct children: ${node.n_children} <br/>
+            total children: ${node.n_descendants} <br/>`;
+          } else {
+            eplain1.innerHTML = "nothing?"
+          }
+          // setTimeout(() =>  1);//Graph.zoom(.7,1500)  
+        })
+        .nodeRelSize(3)
+        // .nodeResolution(4)
+        // .nodeLabel('text')
+
+        .nodeLabel((d) => {
+          // convert to date
+          const pubtime = new Date(d.year*1000).toDateString();
+          return `${d.text_list} <br/> ${pubtime}<br/>Score: ${d.n_citations}<br/> ${d.author_name}`;
+        })
+        // text: d.text_name + "<br/>" + d.year + " n_works: " + d.n_works  + " <br/>Citations:" + 
+        //   d.n_citations + "<br/>" + d.text_list + "<br/>" +
+        //   " ", //d.x.toString().substring(0,4) + " " //+ d.y.toString().substring(0,4),
+        // .d3Force('link', null)
+        // .d3Force('charge', null)
+        // .d3Force('center', null)
+        
+        .nodeCanvasObject((node, ctx, globalScale) => {
+          let fontSize;// = Math.max(Math.min(48,Math.sqrt(node.n_works)*6),8)/globalScale;
+          fontSize = Math.max(Math.min(220,(node.size/100+1)*1.0)/(globalScale**0.80),.03);
+          // console.log(globalScale) -- equeals zoom level. 1 at start, 50 when zoomed deep in
+          const xyscreen = Graph.graph2ScreenCoords(node.fx, node.fy);
+          if (xyscreen.x>-30 && xyscreen.x<gwidth && xyscreen.y>-30 && xyscreen.y<gheight){
+          // if (xyscreen.x>220){
+            if (1==0){ //fontSize*globalScale**2 < 1.4  ) {
+              // Draw nothing
+              node.__bckgDimensions =  [-1, -1];
+            } else if (fontSize*globalScale**2 < 230 && node.type != "t" ) {
+              // Draw a circle
+              // console.log("circle", node.index, node.author_name, node.fx, node.fy, node.fz, node.year, node.n_works, node.n_citations, node.id)
+              ctx.beginPath();
+              ctx.arc(node.x, node.y, fontSize*0.3, 0, 2 * Math.PI, false);
+              ctx.fillStyle = node.color;
+              ctx.fill();
+              node.__bckgDimensions =  [fontSize, fontSize];
+            } else {
+                // Write text label
+              // const label = node.author_name;
+              const label = node.text_label.substring(0, Math.min(40,node.text_label.length))
+              // console.log( "fontSize", fontSize, Math.sqrt(node.n_citations),label, node.n_citations, node.n_works, node.type)
+              ctx.font = `${fontSize}px Sans-Serif`;
+              const textWidth = ctx.measureText(label).width;
+              const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
+              node.__bckgDimensions = bckgDimensions; // to re-use in nodePointerAreaPaint
+              // ctx.fillStyle = 'rgba(255, 135, 175, 0.8)';
+              // ctx.fillRect(node.fx - bckgDimensions[0] / 2, node.fy - bckgDimensions[1] / 2, ...bckgDimensions);
+
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              if (node.type == "t") {
+                ctx.fillStyle = 'rgba(30, 60, 0, 0.8)';
+              } else {
+                ctx.fillStyle = node.color;
+              }
+              ctx.fillText(label, node.fx, node.fy);
+            }
+          } else {
+            node.__bckgDimensions =  [-1, -1];
+          }
+        })
+        .nodePointerAreaPaint((node, color, ctx) => {
+          if (node.__bckgDimensions[0] == -1) {
+            return;
+          }
+          ctx.fillStyle = color;
+          const bckgDimensions = node.__bckgDimensions;
+          bckgDimensions && ctx.fillRect(node.fx - bckgDimensions[0] / 2, node.fy - bckgDimensions[1] / 2, ...bckgDimensions);
+        })
+        .enableNodeDrag(false)
+        .warmupTicks(0)
+        .cooldownTicks(0)
+        .onZoomEnd((zoom) => {
+
+          // check if new data needs to be fetched:
+          const zoomlevelfetch1 = 25.0;
+          if (zoom.k > zoomlevelfetch1){ //zoomed in enough
+            if (datazoom.k <zoomlevelfetch1){
+              console.log("zoomEnd reached k>zoomlevelfetch1",zoom);
+              // fetch new data and add to graph; then save position and zoom
+              fetchAndDisplayNewData(zoom);
+              datazoom = zoom
+            } else if (xtile != Math.floor((zoom.x-minmaxxy[0])/tilesizex) || ytile != Math.floor((zoom.y-minmaxxy[2])/tilesizey)) {
+              console.log("zoomEnd reached new tile", zoom);
+              // fetch new data and add to graph; then save position and zoom
+              fetchAndDisplayNewData(zoom);
+              datazoom = zoom
+            } else if (Math.abs(datazoom.y - zoom.y)> tilesizey) {
+              console.log("zoomEnd reached y tile", zoom);
+              // fetch new data and add to graph; then save position and zoom
+              
+              fetchAndDisplayNewData(zoom);
+              datazoom = zoom
+            } else if (Math.abs(datazoom.x - zoom.x)> tilesizex) {
+              console.log("zoomEnd reached x tile", zoom);
+              // fetch new data and add to graph; then save position and zoom
+              fetchAndDisplayNewData(zoom);
+              datazoom = zoom
+            }
+          } else if (zoom.k < zoomlevelfetch1 && datazoom.k >zoomlevelfetch1){
+            datazoom.k = zoom.k;
+            console.log("zoomEnd zoomed out again k<zoomlevelfetch1", zoom);
+            //remove data
+            // data1.nodes = data1.nodes.slice(0,firstlength);
+            Graph.graphData(data1);
+          }
+          // set URLparams to current zoom and position
+          window.history.replaceState(null, null, "?x="+zoom.x+"&y="+zoom.y+"&k="+zoom.k+"&dataset="+datasetname);
+
+
+        })
+        // .onNodeClick(node =>  window.open(`${node.id}`, '_blank'));
+    //  Graph.zoomToFit(2000);
+    let gwidth;
+    let gheight;
+    if (datazoom.k == 1.0){
+      console.log("first graph initialization")
+      // Graph.centerAt((minmaxxy[0]+minmaxxy[1])/2,(minmaxxy[2]+minmaxxy[3])/2)
+      // zoom to url params
+      if (urlx && urly && urlk) {
+        Graph.centerAt(urlx,urly)
+        setTimeout(() => Graph.zoom(urlk,2500), 1);//Graph.zoom(.7,1500)
+      } else {
+        Graph.centerAt(startx,starty)
+        setTimeout(() => Graph.zoom(startk,1500), 1);//Graph.zoom(.7,1500)
+      }
+      gwidth = Graph.width();
+      gheight = Graph.height();
+      // Graph.coo
+      const resize2 = new ResizeObserver(function (entries) { 
+         let rect = entries[0].contentRect
+         Graph.width(rect.width).height(rect.height) 
+         gwidth = rect.width;
+         gheight = rect.height;
+        })
+      resize2.observe(document.querySelector("#graph"));
+    } else {
+      // Graph.centerAt(datazoom.x,datazoom.y)
+      // setTimeout(() => Graph.zoom(datazoom.k,1500), 1);//Graph.zoom(.7,1500)
+      console.log("second...")
+    }
+  } 
+}
+
+streamingLoaderWorker.postMessage(`data/${datasetname}/base.tsv`);
+
+  </script>
+</body>
