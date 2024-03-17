@@ -1,6 +1,6 @@
- <h2>Demographic research map</h2>
+ <h2>Hackmap</h2>
   <p>
-    This plot shows a few thousand of the most important authors and papers from some important demographic journals.
+    This website shows a few million submissions, comments and users of Hacker News.
     The position is determined by an algorithm that places similar titles close to each other.
     The size of the node represents the number of citations.
 
@@ -8,61 +8,65 @@
   <p>
     <b>How to use:</b> 
     <ul>
-      <!-- <li>Click on a node to see the author's name and the number of works and citations</li> -->
-      <!-- <li>Click on the author's name to open the author's page on <a href="https://www.demographic-research.org/">Demographic Research</a></li> -->
       <li>Use the search box to find an author or a paper</li>
       <li>Use the mouse wheel or two fingers to zoom in and out</li>
     </ul>
     
   </p>
-  <details>
-    <summary>Details</summary>
-    <p>
-      The data was downloaded from <a href="https://openalex.org/works?sort=cited_by_count%3Adesc&column=display_name,publication_year,type,open_access.is_oa,cited_by_count&page=1&filter=primary_location.source.id%3AS184793761%7CS30543418%7CS32314625%7CS202512192%7CS79946630%7CS4210206495%7CS190460170%7CS3035070908">Open Alex</a> on 2024-01-08.
-      I included all articles from the journals 
-      <a href="https://www.demographic-research.org/">Demographic Research</a>,
-      <a href="https://read.dukeupress.edu/demography">Demography</a>, 
-      <a href="https://www.tandfonline.com/journals/rpst20">Population Studies</a>,
-      <a href="https://onlinelibrary.wiley.com/journal/17284457">Population and Development Review</a>,
-      <a href="#">Population and Policy Review</a>,
-      <a href="#">Population</a>,
-      <a href="#">Population space and place</a>,
-      <a href="#">European Journal of Population</a>,
-      <a href="#">Population Studies</a> and
-      <a href="#">Genus</a>.
-      But since 30 thousand authors and 40 thousand papers are too much for a browser, 
-      I kept only 4500 authors and 4000 papers, based on their last publication year and the number of citations.
-      
+  <p>
+      The data was downloaded from the HN-API
+      But since ~40 Million items are too much for a browser, 
+      I kept only those 2.6 Million with at least some replies.
+      I fed the comments to a <a href="https://www.sbert.net/">SentenceTransformers</a> model (all-MiniLM-L6-v2) 
+      to create text embeddings. Titles of submissions are often ambiguous, so I used the average embeddings of their comments
+      to get a better representation of the content of submissions. The same was done for the users.
+      Then I used <a href="https://umap-learn.readthedocs.io/">UMAP</a> to reduce the dimensionality of the embeddings
+      to 3, 2 and 1 dimensions. 3 for the colors, 2 for the placement of the nodes and 1 for a plot with the time dimension.
+      But the 3D colors didn't add much information, so I removed them. <br/>
+      I also used <a href="https://maartengr.github.io/BERTopic/">Bertopic</a> to get clusters and names for these 
+      clusters... but they also don't add much information upon the titles of the submissions.
+
+      <br/>
+      There are several implementations of maps like this. (todo: add links)
+      Some of them are very sophisticated, but they don't show the actual text on the canvas. 
+      I think showing as much information as possible, while not overwhelming the user (and browser...)
+      is very important for how much the user can get out of such a visualization of big data.
+      Another important aspect is that I wanted to host the whole thing on a static hoster,
+      which makes things much easier in the long term.
+      I used mostly vanilla Javascript (good decision for such a site - no build step 
+      and no fighting against Svelte or React) and the excellent 
+      <a href="https://github.com/vasturiano/force-graph">force-graph</a> library.
+
+      Since there are too many data points to show at once, the page fetches a base map with
+      the 40 000 most important nodes and then fetches additional data tiles when you zoom in.
+      Unfortunately, I couldn't find the time to implement a static search over all the data, 
+      so the search currently only works for the base-tile of 40 000 nodes.
+      <br/>
+      The color of the nodes is based on the publication date. The size is based on the 
+      score of submissions and the number of direct and indirect child comments for comments 
+      and users.
+      <br/>
+
+
+      <br/>
+
+      The biggest challenge in this project was that it worked so well that I got constantly 
+      distracted by the stories and comments that I discovered while testing the plot.
+      This is why I release it now in this work-in-progress state. Firefox doesn't render some nodes 
+      when zoomed in too much, Chrome renders them, but has problems with showing the correct tooltips.
     </p>
     <p>
-      I used <a href="https://www.sbert.net/">SentenceTransformers</a> and the model
-       <a href="https://huggingface.co/thenlper/gte-small">thenlper/gte-small</a>
-      to create text embeddings of the titles of the articles.
-      Text embeddings are vectors with hundreds or thousands (in this case 384) of dimensions that 
-      represent the meaning of a text. Similar texts have similar embeddings.
-      Then I used <a href="https://umap-learn.readthedocs.io/">UMAP</a> to reduce the 
-      dimensionality of the embeddings to 2 dimensions. 
-      The placement of the articles in the plot is based on these 2 dimensions, 
-      no citation information is used for the placement.
-      For the authors I averaged the embeddings of all their articles and then used the same UMAP model again.
-      <br/>
-      The size of the nodes is based on the number of citations.
-      <br/>
-      The color of the nodes is based on the year of the last publication.
-      <br/>
-      I used the Javascript library <a href="https://github.com/vasturiano/force-graph">force-graph</a>
-      to paint the nodes on the canvas.
-      But I had to optimize the painting a bit so that nodes outside of the visible 
-      area are not painted and the text is only painted if you zoom in enough.
-      <br/>
-      The inspiration came from a 
-      <a href="https://bsky.app/profile/ikashnitsky.phd/post/3khedvmcu4y23">social media post</a>
-      by Ilya Kashnitsky which plots the 50 most prolific authors in demography. Why limit us to 50 when we can show 4500?
+      Candos and Todos:
+      <ul>
+        <li>Better search</li>
+        <li>More levels of tiles</li>
+        <li>Tuning of the size and show parameters</li>
+        <li>Earlier data from HN</li>
+        <li>Better UI</li>
+        <li>Other datasets (MusicBrainz, OpenAlex, Newspapers,...)</li>
 
       </p>
-      If you have any questions or suggestions, please get in touch at <a href="mailto:theile@mpidr.de">theile@mpidr.de</a>
-      <p>The code can be found on Github: <a href="https://github.com/tomthe/demographymap">github.com/tomthe/demographymap</a>
+      If you have any questions or suggestions, please get in touch at <a href="mailto:tom@theilemail.de">tom@theilemail.de</a>
+      <p>The code can be found on Github: <a href="https://github.com/tomthe/hackmap">github.com/tomthe/demographymap</a>
 
       </p>
-  </details>
-  
