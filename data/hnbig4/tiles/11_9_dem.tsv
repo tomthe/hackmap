@@ -1,2 +1,2 @@
-id	label	hovertext	author	x	y	type	relevance	size	year	umap1d
-18589481	Ask HN: Who is hiring? (December 201	Ask HN: Who is hiring? (December 2018)	lazykid07	3.395723	0.2349578	story	22.0	6.0	1543851120	-15.92976
+id	x	y	type	relevance	size	year	umap1d	hovertext	url	author
+18589481	3.395723	0.2349578	story	22.0	6.0	1543851120	-15.92976	Ask HN: Who is hiring? (December 2018)		lazykid07

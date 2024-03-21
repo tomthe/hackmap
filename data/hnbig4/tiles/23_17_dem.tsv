@@ -1,3 +1,3 @@
-id	label	hovertext	author	x	y	type	relevance	size	year	umap1d
-29288153	"Lobbing a charge like ""Arbitrary rel"	"Lobbing a charge like ""Arbitrary religious dogma"" is pretty much the opposite of a reasoned look at what the goals are here.I find the approach interesting. The goal of the Free Software folk was never primarily to ""provide the best information to the end user"	jrm4	14.857928	8.406823	comment	3.0	16.0	1637417087	10.493522
-32954214	Emacs. TeX/LaTeX. Classic Unix. i3. 	Emacs. TeX/LaTeX. Classic Unix. i3. A bunch of Scheme implementations. Tcl/Tk.	vincent-manis	14.876779	8.40907	comment	4.0	11.5	1663951443	-9.5585785
+id	x	y	type	relevance	size	year	umap1d	hovertext	url	author
+29288153	14.857928	8.406823	comment	3.0	16.0	1637417087	10.493522	"Lobbing a charge like ""Arbitrary religious dogma"" is pretty much the opposite of a reasoned look at what the goals are here.I find the approach interesting. The goal of the Free Software folk was neve..."		jrm4
+32954214	14.876779	8.40907	comment	4.0	11.5	1663951443	-9.5585785	Emacs. TeX/LaTeX. Classic Unix. i3. A bunch of Scheme implementations. Tcl/Tk.		vincent-manis

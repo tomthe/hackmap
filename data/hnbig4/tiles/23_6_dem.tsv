@@ -1,26 +1,26 @@
-id	label	hovertext	author	x	y	type	relevance	size	year	umap1d
-27624568	Reddit Down	Reddit Down	msslx	14.6062565	-2.5956917	story	3.0	10.0	1624573009	15.591244
-12272289	Reddit is down	Reddit is down	kfinley	14.605592	-2.59597	story	3.0	24.0	1470956429	15.591615
-26256009	Reddit Down	Reddit Down	quickthrower2	14.605398	-2.5958674	story	3.0	15.0	1614201103	15.5910225
-12371275	Quora is down!	Quora is down!	sunilkumarc	14.6064825	-2.594327	story	4.0	5.0	1472279247	15.591357
-19865565	Reddit Is Down	Reddit Is Down	vezycash	14.60954	-2.5946648	story	4.0	5.0	1557378433	15.593898
-17562107	Reddit is down	Reddit is down	legacy2013	14.608481	-2.5948887	story	4.0	3.0	1531948398	15.591558
-31901085	Is Reddit Down?	Is Reddit Down?	trashtestcrash	14.559125	-2.5970058	story	4.0	6.0	1656365398	15.58569
-28968471	Reddit Is Down	Reddit Is Down	quantumwoke	14.608405	-2.5962148	story	4.0	7.0	1634997129	15.592599
-13226738	Reddit is down	Reddit is down	davidhariri	14.606676	-2.5951946	story	5.0	8.0	1482293633	15.591296
-14654135	Reddit is down	Reddit is down	celticninja	14.6076	-2.5946927	story	5.0	7.0	1498658448	15.59114
-20411334	Reddit Is Down	Reddit Is Down	max0563	14.610442	-2.5947356	story	5.0	16.0	1562851587	15.592653
-34446852	Reddit Is Down	Reddit Is Down	tpmx	14.607035	-2.59603	story	5.0	10.0	1674169368	15.590766
-36977274	Reddit Is Down	Reddit Is Down	i13e	14.607798	-2.5956872	story	5.0	13.0	1691009708	15.590923
-24671459	Is Reddit Down?	Is Reddit Down?	fabbari	14.560554	-2.5941875	story	5.0	4.0	1601727341	15.58475
-20021999	Reddit Is Down	Reddit Is Down	rahuldottech	14.610643	-2.5948021	story	6.0	6.0	1558963592	15.593295
-30065872	Reddit Is Down	Reddit Is Down	coolandsmartrr	14.60937	-2.5969856	story	7.0	34.0	1643068326	15.591465
-25379178	Reddit Is Down	Reddit Is Down	tpmx	14.601192	-2.596817	story	7.0	30.0	1607636892	15.590309
-36294216	Reddit Is Down	Reddit Is Down	gareth_untether	14.605584	-2.5958667	story	8.0	36.0	1686580585	15.590543
-21009991	Reddit Is Down	Reddit Is Down	adossaji	14.610801	-2.5944128	story	8.0	28.0	1568839606	15.591847
-28150847	Reddit Is Down	Reddit Is Down	l33tbro	14.607997	-2.5960763	story	9.0	52.0	1628734339	15.593658
-34885234	Old Reddit Is Down	Old Reddit Is Down	aaws11	14.603206	-2.592109	story	10.0	46.0	1677005742	15.59018
-21009899	Reddit Down?	Reddit Down?	reddotX	14.526979	-2.5958755	story	12.0	21.0	1568839123	15.580121
-22365113	Reddit Status	Reddit Status	kornakiewicz	14.467538	-2.5852175	story	13.0	42.0	1582118011	15.544558
-35157078	Reddit Is Down	Reddit Is Down	pitaj	14.610609	-2.594931	story	20.0	178.0	1678822028	15.591007
-35159378	Reddit is currently down	Reddit is currently down	EToS	14.611844	-2.5945518	story	23.0	183.0	1678830521	15.591058
+id	x	y	type	relevance	size	year	umap1d	hovertext	url	author
+27624568	14.6062565	-2.5956917	story	3.0	10.0	1624573009	15.591244	Reddit Down	https://www.redditstatus.com/#week	msslx
+12272289	14.605592	-2.59597	story	3.0	24.0	1470956429	15.591615	Reddit is down	https://www.reddit.com/	kfinley
+26256009	14.605398	-2.5958674	story	3.0	15.0	1614201103	15.5910225	Reddit Down	https://www.redditstatus.com/incidents/wsrwszw4x5td	quickthrower2
+12371275	14.6064825	-2.594327	story	4.0	5.0	1472279247	15.591357	Quora is down!		sunilkumarc
+19865565	14.60954	-2.5946648	story	4.0	5.0	1557378433	15.593898	Reddit Is Down	https://reddit.com/	vezycash
+17562107	14.608481	-2.5948887	story	4.0	3.0	1531948398	15.591558	Reddit is down	https://www.reddit.com/	legacy2013
+31901085	14.559125	-2.5970058	story	4.0	6.0	1656365398	15.58569	Is Reddit Down?		trashtestcrash
+28968471	14.608405	-2.5962148	story	4.0	7.0	1634997129	15.592599	Reddit Is Down	https://old.reddit.com/	quantumwoke
+13226738	14.606676	-2.5951946	story	5.0	8.0	1482293633	15.591296	Reddit is down	HTTPS://Reddit.com	davidhariri
+14654135	14.6076	-2.5946927	story	5.0	7.0	1498658448	15.59114	Reddit is down	https://www.reddit.com/r/all	celticninja
+20411334	14.610442	-2.5947356	story	5.0	16.0	1562851587	15.592653	Reddit Is Down	https://www.reddit.com/	max0563
+34446852	14.607035	-2.59603	story	5.0	10.0	1674169368	15.590766	Reddit Is Down		tpmx
+36977274	14.607798	-2.5956872	story	5.0	13.0	1691009708	15.590923	Reddit Is Down	https://www.reddit.com/?rdt=40511	i13e
+24671459	14.560554	-2.5941875	story	5.0	4.0	1601727341	15.58475	Is Reddit Down?	https://www.reddit.com/	fabbari
+20021999	14.610643	-2.5948021	story	6.0	6.0	1558963592	15.593295	Reddit Is Down	https://www.reddit.com/	rahuldottech
+30065872	14.60937	-2.5969856	story	7.0	34.0	1643068326	15.591465	Reddit Is Down		coolandsmartrr
+25379178	14.601192	-2.596817	story	7.0	30.0	1607636892	15.590309	Reddit Is Down		tpmx
+36294216	14.605584	-2.5958667	story	8.0	36.0	1686580585	15.590543	Reddit Is Down	https://downdetector.com/status/reddit/	gareth_untether
+21009991	14.610801	-2.5944128	story	8.0	28.0	1568839606	15.591847	Reddit Is Down	https://reddit.statuspage.io/	adossaji
+28150847	14.607997	-2.5960763	story	9.0	52.0	1628734339	15.593658	Reddit Is Down	https://www.reddit.com/r/news	l33tbro
+34885234	14.603206	-2.592109	story	10.0	46.0	1677005742	15.59018	Old Reddit Is Down	https://old.reddit.com/r/webdev/	aaws11
+21009899	14.526979	-2.5958755	story	12.0	21.0	1568839123	15.580121	Reddit Down?		reddotX
+22365113	14.467538	-2.5852175	story	13.0	42.0	1582118011	15.544558	Reddit Status	https://www.redditstatus.com/	kornakiewicz
+35157078	14.610609	-2.594931	story	20.0	178.0	1678822028	15.591007	Reddit Is Down	https://reddit.statuspage.io/	pitaj
+35159378	14.611844	-2.5945518	story	23.0	183.0	1678830521	15.591058	Reddit is currently down	https://mashable.com/article/reddit-is-down-major-outage	EToS

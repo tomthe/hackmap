@@ -1,2 +1,2 @@
-id	label	hovertext	author	x	y	type	relevance	size	year	umap1d
-20859700	Ask HN: Who is hiring? (September 20	Ask HN: Who is hiring? (September 2019)	whoishiring	3.286407	0.24308002	story	10.0	11.0	1567438366	-16.02747
+id	x	y	type	relevance	size	year	umap1d	hovertext	url	author
+20859700	3.286407	0.24308002	story	10.0	11.0	1567438366	-16.02747	Ask HN: Who is hiring? (September 2019)		whoishiring
