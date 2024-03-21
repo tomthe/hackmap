@@ -48,7 +48,14 @@
       clusters... but they also don't add much information upon the titles of the submissions.
 
       <br/>
-      There are several implementations of maps like this. (todo: add links)
+      There are several implementations of maps like this: 
+      <a href="https://creatingdata.us/techne/deep_scatterplots/">The Hathi Trust Library</a>,
+      <a href="https://static.nomic.ai/pubmed.html">20 Million Pubmed articles</a>
+      and a few examples from <a href="https://datamapplot.readthedocs.io/en/latest/auto_examples/index.html">datamapplot</a>
+      (a library from Leland McInnes, the creator of UMAP):
+      <a href="https://lmcinnes.github.io/datamapplot_examples/Wikipedia_data_map_example.html">Wikipedia</a>
+      <a href="https://lmcinnes.github.io/datamapplot_examples/CORD19_data_map_example.html">20 Newsgroups</a>
+      (todo: add links)
       Some of them are very sophisticated, but they don't show the actual text on the canvas. 
       I think showing as much information as possible, while not overwhelming the user (and browser...)
       is very important for how much the user can get out of such a visualization of big data.
@@ -189,10 +196,11 @@ streamingLoaderWorker.onmessage = ({
       // fz: (Number(d.year)-2000)*45,
       year: Math.round(Number(d.year)),
       hovertext: d.hovertext,
+      url: d.url,
       // author: d.author,
       author_name: d.author,
-      text_label: d.label,
-      text_list: d.hovertext,
+      // text_label: d.label,
+      text_label: d.hovertext.substring(0, Math.min(40,d.hovertext.length)),
       n_children: Number(d.relevance),
       n_descendants: Number(d.size),
       id: d.id,
@@ -214,6 +222,8 @@ streamingLoaderWorker.onmessage = ({
       placeHolder: "Search...",
         data: {
             src: data1.nodes,
+            // todo: fetch json, based on first characters
+            // url: `data/${datasetname}/search/${abc}.json`,
             // async () => {
             //   try {
             //     // Loading placeholder text
@@ -236,7 +246,7 @@ streamingLoaderWorker.onmessage = ({
             //     return error;
             //   }
             // },
-            keys: ["label"]
+            keys: ["text_label"]
         },
         resultItem: {
             highlight: true,
@@ -282,6 +292,7 @@ streamingLoaderWorker.onmessage = ({
 
           if (node.type=="story") {
             eplain1.innerHTML = `<a href="https://news.ycombinator.com/item?id=${node.id}" target="_blank">${node.hovertext}</a> <br/>
+            <a href="${node.url}" target="_blank">${node.url}</a> <br/>
             <a href="https://news.ycombinator.com/user?id=${node.author_name}" target="_blank">${node.author_name}</a> <br/>
             ${new Date(node.year*1000).toDateString()} <br/>
             score: ${node.n_descendants} <br/>
@@ -289,14 +300,14 @@ streamingLoaderWorker.onmessage = ({
             total comments: ${node.n_descendants} <br/>`;
           } else if (node.type == "author") {
             eplain1.innerHTML = `<a href="https://news.ycombinator.com/user?id=${node.id}" target="_blank">${node.hovertext}</a> <br/>
-            last post: ${new Date(node.year*1000).toDateString()} <br/>
+            first post: ${new Date(node.year*1000).toDateString()} <br/>
             number of commented on stories: ${node.n_descendants} <br/>
             umap1d: ${node.umap1d} <br/>
             direct answers: ${node.n_children} <br/>
             total comments: ${node.n_descendants} <br/>`;
           } else if (node.type == "comment") {
             eplain1.innerHTML = `<a href="https://news.ycombinator.com/item?id=${node.id}" target="_blank">${node.hovertext}</a> <br/>
-            last post: ${new Date(node.year*1000).toDateString()} <br/>
+            date: ${new Date(node.year*1000).toDateString()} <br/>
             number of commented on stories: ${node.n_descendants} <br/>
             umap1d: ${node.umap1d} <br/>
             direct answers: ${node.n_children} <br/>
@@ -314,10 +325,10 @@ streamingLoaderWorker.onmessage = ({
         .nodeLabel((d) => {
           // convert to date
           const pubtime = new Date(d.year*1000).toDateString();
-          return `${d.text_list} <br/> ${pubtime}<br/>Score: ${d.n_descendants}<br/> ${d.author_name}`;
+          return `${d.hovertext} <br/> ${pubtime}<br/>Score: ${d.n_descendants}<br/> ${d.author_name}`;
         })
         // text: d.text_name + "<br/>" + d.year + " n_works: " + d.n_works  + " <br/>Citations:" + 
-        //   d.n_citations + "<br/>" + d.text_list + "<br/>" +
+        //   d.n_citations + "<br/>" + d.hovertext + "<br/>" +
         //   " ", //d.x.toString().substring(0,4) + " " //+ d.y.toString().substring(0,4),
         // .d3Force('link', null)
         // .d3Force('charge', null)
@@ -338,6 +349,7 @@ streamingLoaderWorker.onmessage = ({
               node.__bckgDimensions =  [-1, -1];
             } else if (fontSize*globalScale**1.3 > 109 && node.type == "topic") {
               // too big, draw nothing
+              node.__bckgDimensions =  [-1, -1];
             } else if ((fontSize*globalScale**1.3 < 20 && node.type != "topic" )
                     || (fontSize*globalScale**1.3 < 12 && node.type == "topic"))  {
               // Draw a circle
@@ -350,7 +362,7 @@ streamingLoaderWorker.onmessage = ({
             } else {
                 // Write text label
               // const label = node.author_name;
-              const label = node.text_label.substring(0, Math.min(40,node.text_label.length))
+              const label = node.text_label;
               // console.log( "fontSize", fontSize, Math.sqrt(node.n_citations),label, node.n_citations, node.n_works, node.type)
               ctx.font = `${fontSize}px Sans-Serif`;
               const textWidth = ctx.measureText(label).width;
